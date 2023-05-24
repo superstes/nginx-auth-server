@@ -46,6 +46,9 @@ apt install libpam-google-authenticator qrencode
 mkdir -p "$PATH_TOTP"
 chown -R "$AUTH_USER":"$AUTH_USER" "$PATH_TOTP" 
 chmod 750 "$PATH_TOTP" 
+cp pam/nginx-auth-totp /etc/pam.d/nginx-auth-totp
+## to generate keys:
+google-authenticator -s "$PATH_TOTP" --time-based --issuer="$YOUR-SERVICE" --label="$USER"
 
 # to use LDAP-authentication
 python3 -m pip install ldap3
@@ -57,6 +60,7 @@ chmod 750 "$PATH_LDAP"
 # to use system-user authentication
 python3 -m pip install python-pam six toml
 usermod -a -G shadow "$AUTH_USER"
+cp pam/nginx-auth-system /etc/pam.d/nginx-auth-system
 
 # add systemd service
 cp systemd/nginx-auth-server.service "/etc/systemd/system/${SERVICE}.service"
@@ -64,6 +68,8 @@ systemctl daemon-reload
 systemctl enable "${SERVICE}.service"
 systemctl start "${SERVICE}.service"
 ```
+
+If you don't want to install all python-modules - you might need to remove imports to unneeded authentication methods, so you don't get "ModuleNotFoundError" exceptions.
 
 ## Example
 
@@ -161,6 +167,8 @@ ls -l "${PATH_LIB}/venv/python"
 # else you might need to copy the currently linked binary inside your venv
 cp /usr/bin/python3 "${PATH_LIB}/venv/python/bin/python"
 # make sure to limit the execution privileges on the binary
+chown "root:${AUTH_USER}" "${PATH_LIB}/venv/python/bin/python"
+chmod 750 "${PATH_LIB}/venv/python/bin/python"
 
 # after that you can add system capabilities to the binary
 ## if you encounter the 'Failed to change group id for user' error:

@@ -1,4 +1,5 @@
 DEBUG = False
+TESTING = False  # direct non-proxy access to flask server
 
 ENCRYPTION_KEY = ''  # NEEDS TO BE REPLACED!
 
@@ -17,9 +18,9 @@ SESSION_LIFETIME = 8 * 3600  # 8 hours
 COOKIE_SESSION = 'NGINX-AUTH-SESSION'
 COOKIE_USER = 'NGINX-AUTH-USER'
 
-PAM_FILE_SYSTEM = 'auth-system'
-PAM_FILE_TOTP = 'auth-totp'
-PAM_FILE_CUSTOM = 'auth-custom'
+PAM_FILE_SYSTEM = 'nginx-auth-system'
+PAM_FILE_TOTP = 'nginx-auth-totp'
+PAM_FILE_CUSTOM = 'nginx-auth-custom'
 
 LDAP_CONFIG = dict(
     tls=True,

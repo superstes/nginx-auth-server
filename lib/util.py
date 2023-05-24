@@ -1,10 +1,13 @@
-from config import DEBUG
+from config import DEBUG, LOCATION
 
 
 def debug(msg: str, loc: str = None):
     if DEBUG:
         if loc is not None:
-            print(f'DEBUG: /{loc} | {msg}')
+            if not loc.startswith(LOCATION):
+                loc = f'{LOCATION}/{loc}'
+
+            print(f'DEBUG: {loc} | {msg}')
 
         else:
             print(f'DEBUG: {msg}')

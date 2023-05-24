@@ -5,7 +5,7 @@
 from flask import Flask, request, render_template, redirect, Response
 from waitress import serve
 
-from config import PORT, AUTH_USER_TYPE, AUTH_TOKEN_TYPE, LOCATION, ORIGIN_HEADER, \
+from config import PORT, AUTH_USER_TYPE, AUTH_TOKEN_TYPE, LOCATION, ORIGIN_HEADER, TESTING, \
     FORM_PARAM_USER, FORM_PARAM_PWD, FORM_PARAM_TOKEN, \
     SESSION_LIFETIME, COOKIE_SESSION, COOKIE_USER
 from session import has_valid_session, create_session_token
@@ -22,9 +22,11 @@ AUTH_MAPPING = {
     'totp': auth_totp,
 }
 
+SCHEME = 'http' if TESTING else 'https'
+
 
 def _authenticate(user: str, secret_user: str, secret_token: (str, None)) -> bool:
-    if secret_token is None:
+    if AUTH_TOKEN_TYPE is None or secret_token is None:
         auth = AUTH_MAPPING[AUTH_USER_TYPE](user=user, secret=secret_user)
 
     else:
@@ -44,32 +46,32 @@ def _authenticate(user: str, secret_user: str, secret_token: (str, None)) -> boo
 
 def _redirect_origin() -> Response:
     origin = '/' if ORIGIN_HEADER not in request.headers else request.headers[ORIGIN_HEADER]
-    return redirect(f"https://{request.headers['HOST']}{origin}")
+    return redirect(f"{SCHEME}://{request.headers['HOST']}{origin}")
 
 
 # route for interactive authentication
 #   this one is called if the non-interactive authentication returns status 401 unauthorized
-@app.get(f"/{LOCATION}/login")
+@app.get(LOCATION + '/login')
 def form():
-    debug(loc=f"{LOCATION}/login", msg=f"REQUEST | {request.__dict__}")
+    debug(loc='/login', msg=f"REQUEST | {request.__dict__}")
 
     if has_valid_session():
         response = _redirect_origin()
-        debug(loc=f"{LOCATION}/login", msg=f"RESPONSE | {response.__dict__}")
+        debug(loc='/login', msg=f"RESPONSE | {response.__dict__}")
         return response
 
-    debug(loc=f"{LOCATION}/login", msg="RESPONSE | 200 - Rendering template")
+    debug(loc='/login', msg="RESPONSE | 200 - Rendering template")
     return render_template(
         'login.html',
-        LOCATION=LOCATION,
+        LOCATION=LOCATION, SCHEME=SCHEME, HOST=request.headers['HOST'],
         FORM_PARAM_PWD=FORM_PARAM_PWD, FORM_PARAM_USER=FORM_PARAM_USER, FORM_PARAM_TOKEN=FORM_PARAM_TOKEN
     )
 
 
 # route to validate interactive authentication (to create session)
-@app.post(f"/{LOCATION}/login")
+@app.post(LOCATION + '/login')
 def login():
-    debug(loc=f"{LOCATION}/login", msg=f"REQUEST | {request.__dict__}")
+    debug(loc='/login', msg=f"REQUEST | {request.__dict__}")
     user = request.form[FORM_PARAM_USER]
     secret_user = request.form[FORM_PARAM_PWD]
     secret_token = request.form[FORM_PARAM_TOKEN] if FORM_PARAM_TOKEN in request.form else None
@@ -90,33 +92,33 @@ def login():
             key=COOKIE_USER,
             value=user,
         )
-        debug(loc=f"{LOCATION}/login", msg=f"RESPONSE | {response.__dict__}")
+        debug(loc='/login', msg=f"RESPONSE | {response.__dict__}")
         return response
 
-    debug(loc=f"{LOCATION}/login", msg='RESPONSE | 401')
+    debug(loc='/login', msg='RESPONSE | 401')
     return 'unauthorized', 401
 
 
 # route for non-interactive authentication (session cookie)
 #   this one is called on every request that hits nginx
-@app.get(f"/{LOCATION}")
+@app.get(LOCATION)
 def auth_request():
-    debug(loc=LOCATION, msg=f'REQUEST | {request.__dict__}')
+    debug(loc='/', msg=f'REQUEST | {request.__dict__}')
     if has_valid_session():
         response = Response()
         response.status_code = 200
         response.headers['X_AUTH_REQUEST_USER'] = request.cookies[COOKIE_USER]
-        debug(loc=LOCATION, msg=f"RESPONSE | {response.__dict__}")
+        debug(loc='/', msg=f"RESPONSE | {response.__dict__}")
         return response
 
-    debug(loc=LOCATION, msg='RESPONSE | 401')
+    debug(loc='/', msg='RESPONSE | 401')
     return 'unauthorized', 401
 
 
 @app.route('/<path:path>')
 def catch_all(path):
     debug(loc=path, msg=f'REQUEST | {request.__dict__}')
-    response = redirect(f"https://{request.headers['HOST']}")
+    response = redirect(f"{SCHEME}://{request.headers['HOST']}")
     debug(loc=path, msg='RESPONSE | 200')
     return response
 
