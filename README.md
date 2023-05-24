@@ -33,33 +33,30 @@ mkdir -p "$PATH_LIB"
 cp -r lib/* "$PATH_LIB"
 chown -R "$AUTH_USER":"$AUTH_USER" "$PATH_LIB" 
 chmod -R 750 "$PATH_LIB" 
-apt install python3-pip sqlite3
+
+# create virtual environment
+apt install python3-pip
+python3 -m pip install virtualenv
+python3 -m virtualenv "${PATH_LIB}/venv"
+source "${PATH_LIB}/venv/bin/activate"
+python3 -m pip install flask waitress pycryptodome
 
 # to use TOTP-authentication
 apt install libpam-google-authenticator qrencode
-
 mkdir -p "$PATH_TOTP"
 chown -R "$AUTH_USER":"$AUTH_USER" "$PATH_TOTP" 
 chmod 750 "$PATH_TOTP" 
 
 # to use LDAP-authentication
+python3 -m pip install ldap3
 mkdir -p "$PATH_LDAP"
 chown -R "$AUTH_USER":"$AUTH_USER" "$PATH_LDAP" 
 chmod 750 "$PATH_LDAP" 
 #   add certificates (at least CA-Cert) to PATH_LDAP
 
 # to use system-user authentication
+python3 -m pip install python-pam six toml
 usermod -a -G shadow "$AUTH_USER"
-
-# create virtual environment
-python3 -m pip install virtualenv
-python3 -m virtualenv "${PATH_LIB}/venv"
-source "${PATH_LIB}/venv/bin/activate"
-
-python3 -m pip install flask waitress db-sqlite3
-
-# you could remove unneeded modules
-python3 -m pip install python-pam ldap3
 
 # add systemd service
 cp systemd/nginx-auth-server.service "/etc/systemd/system/${SERVICE}.service"

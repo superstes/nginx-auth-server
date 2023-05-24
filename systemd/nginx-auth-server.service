@@ -6,6 +6,8 @@ Documentation=https://github.com/superstes/nginx-auth-server
 Type=simple
 User={{ auth_user }}
 Group={{ auth_user }}
+# todo: add 'ldap3' and/or 'python-pam' to pip-upgrade if needed
+ExecStartPre=/bin/bash -c 'source {{ path_lib }}/venv/bin/activate && pip install --upgrade flask waitress pycryptodome'
 ExecStart=/bin/bash -c 'source {{ path_lib }}/venv/bin/activate && python3 {{ path_lib }}/main.py'
 WorkingDirectory={{ path_lib }}
 Environment=PYTHONPATH={{ path_lib }}
