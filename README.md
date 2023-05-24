@@ -15,7 +15,7 @@ If you want to use OAuth2 => you should look at [oauth2-proxy](https://github.co
 
 ## Install
 
-```
+```bash
 # edit and replace placeholders in:
 #   lib/config.py
 #   lib/templates/login.html
