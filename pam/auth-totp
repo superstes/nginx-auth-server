@@ -1,0 +1,4 @@
+auth required pam_google_authenticator.so debug user={{ AUTH_USER }} secret={{ PATH_TOTP }}/${USER}.key allowed_perm=0600 no_strict_owner
+
+# workaround for non system-users
+account required pam_permit.so
