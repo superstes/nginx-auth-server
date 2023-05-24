@@ -102,8 +102,8 @@ LDAP_CONFIG=dict(
 
 ```
 # you should limit the request-rate on the login location
-limit_req_zone $binary_remote_addr zone=login_sec:20m rate=1r/s;
-limit_req_zone $binary_remote_addr zone=login_min:40m rate=10r/m;
+limit_req_zone $binary_remote_addr zone=login_sec:10m rate=5r/s;
+limit_req_zone $binary_remote_addr zone=login_min:20m rate=30r/m;
 limit_req_status 429;
 
 server {
