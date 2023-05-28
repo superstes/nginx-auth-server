@@ -172,9 +172,9 @@ chmod 750 "${PATH_LIB}/venv/python/bin/python"
 
 # after that you can add system capabilities to the binary
 ## if you encounter the 'Failed to change group id for user' error:
-sudo setcap cap_setgid=+eip /usr/bin/python3.9
+sudo setcap cap_setgid=+eip "${PATH_LIB}/venv/python/bin/python"
 ## if you encounter the 'Failed to change user id to' error:
-sudo setcap cap_setuid=+eip /usr/bin/python3.9
+sudo setcap cap_setuid=+eip "${PATH_LIB}/venv/python/bin/python"
 ```
 
 **WARNING:**
