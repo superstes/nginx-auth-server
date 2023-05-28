@@ -48,7 +48,9 @@ chown -R "$AUTH_USER":"$AUTH_USER" "$PATH_TOTP"
 chmod 750 "$PATH_TOTP" 
 cp pam/nginx-auth-totp /etc/pam.d/nginx-auth-totp
 ## to generate keys:
-google-authenticator -s "$PATH_TOTP" --time-based --issuer="$YOUR-SERVICE" --label="$USER"
+google-authenticator -s "${PATH_TOTP}/${USER}.key" --time-based --issuer="$YOUR_SERVICE" --label="$USER"
+chown "$AUTH_USER":"$AUTH_USER" "${PATH_TOTP}/${USER}.key"
+chmod 600 "${PATH_TOTP}/${USER}.key"
 
 # to use LDAP-authentication
 python3 -m pip install ldap3
