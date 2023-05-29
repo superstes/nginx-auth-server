@@ -193,5 +193,6 @@ unix_chkpwd: password check failed for user
 
 Solution:
 ```
+# add the $AUTH_USER to the group 'shadow' so it can read the system-users password hashes
 usermod -a -G shadow "$AUTH_USER"
 ```
