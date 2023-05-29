@@ -92,6 +92,12 @@ def _tls() -> ldap3.Tls:
 
 
 def auth_ldap(user: str, secret: str) -> bool:
+    if LDAP_CONFIG['filter'].find('%s') == -1:
+        raise ValueError(
+            "The LDAP Filter needs to contain the username-placeholder '%s'! "
+            f"Got: '{LDAP_CONFIG['filter']}'"
+        )
+
     user = ldap_escape_filter_chars(user)
     server = _server()
     ldap = ldap3.Connection(
@@ -106,7 +112,7 @@ def auth_ldap(user: str, secret: str) -> bool:
         debug('AUTH LDAP | Bind user | Authentication successful')
         ldap.search(
             search_base=LDAP_CONFIG['base_dn'],
-            search_filter=LDAP_CONFIG['filter'],
+            search_filter=LDAP_CONFIG['filter'] % user,
         )
         if len(ldap.entries) == 1:
             print(f"AUTH LDAP | User '{user}' | Authorized")
